@@ -1,4 +1,4 @@
-// Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+// Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -103,6 +103,8 @@ MapperInitializationOptionsWidget::MapperInitializationOptionsWidget(
                   "init_min_tri_angle [deg]");
   AddOptionInt(&options->mapper->mapper.init_max_reg_trials,
                "init_max_reg_trials", 1);
+  AddOptionBool(&options->mapper->mapper.init_with_homography,
+                "init_with_homography");
 }
 
 MapperBundleAdjustmentOptionsWidget::MapperBundleAdjustmentOptionsWidget(
@@ -116,6 +118,28 @@ MapperBundleAdjustmentOptionsWidget::MapperBundleAdjustmentOptionsWidget(
   AddOptionBool(&options->mapper->ba_refine_extra_params,
                 "refine_extra_params");
 
+  AddSpacer();
+
+  AddSection("Prior Motion parameters");
+  AddOptionBool(&options->mapper->ba_use_prior_motion, "use_prior_motion");
+  AddOptionBool(&options->mapper->ba_prior_is_gps,
+                "is_gps (will convert priors to ecef coords.)");
+  AddOptionBool(&options->mapper->ba_use_enu_coords,
+                "use_enu_coords (instead of ecef coords.)");
+  AddOptionDouble(&options->mapper->ba_prior_std_x, "Prior - std_x", 0.0, 1e9,
+                  1e-2, 3);
+  AddOptionDouble(&options->mapper->ba_prior_std_y, "Prior - std_y", 0.0, 1e9,
+                  1e-2, 3);
+  AddOptionDouble(&options->mapper->ba_prior_std_z, "Prior - std_z", 0.0, 1e9,
+                  1e-2, 3);
+  AddOptionBool(&options->mapper->ba_global_use_robust_loss_on_prior,
+                "Use Robust Cost function on Motion Priors");
+  AddOptionDouble(&options->mapper->prior_loss_scale,
+                  "Motion Prior Robust Squared Cost", 0.0, 1e6, 1e-3, 4);
+  AddOptionBool(&options->mapper->ba_global_use_robust_cost,
+                "Use Robust Cost function on Visual Measurements");
+  AddOptionDouble(&options->mapper->ba_global_loss_scale,
+                  "Visual meas. Robust Squared Cost", 0.0, 1e6, 1e-3, 4);
   AddSpacer();
 
   AddSection("Local Bundle Adjustment");

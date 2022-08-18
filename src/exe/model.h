@@ -1,4 +1,4 @@
-// Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+// Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -40,5 +40,7 @@ int RunModelMerger(int argc, char** argv);
 int RunModelOrientationAligner(int argc, char** argv);
 int RunModelSplitter(int argc, char** argv);
 int RunModelTransformer(int argc, char** argv);
+
+int RunModelSfmGPSAlign(int argc, char** argv);
 
 }  // namespace colmap

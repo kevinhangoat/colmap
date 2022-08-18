@@ -1,4 +1,4 @@
-// Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+// Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -134,6 +134,7 @@ void FeatureMatchingTab::CreateGeneralOptions() {
                                  "guided_matching");
   options_widget_->AddOptionBool(&options_->sift_matching->planar_scene,
                                  "planar_scene");
+
   options_widget_->AddSpacer();
 
   QScrollArea* options_scroll_area = new QScrollArea(this);

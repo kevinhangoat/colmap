@@ -1,4 +1,4 @@
-// Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+// Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -90,7 +90,7 @@ std::vector<Eigen::Vector3d> GPSTransform::XYZToEll(
     const double y = xyz[i](1);
     const double z = xyz[i](2);
 
-    const double radius_xy = std::sqrt(x * x + y * y);
+    const double radius_xy = sqrt(x * x + y * y);
     const double kEps = 1e-12;
 
     // Latitude
@@ -100,12 +100,11 @@ std::vector<Eigen::Vector3d> GPSTransform::XYZToEll(
     for (size_t j = 0; j < 100; ++j) {
       const double sin_lat0 = sin(lat);
       const double N = a_ / sqrt(1 - e2_ * sin_lat0 * sin_lat0);
-      const double prev_alt = alt;
       alt = radius_xy / cos(lat) - N;
       const double prev_lat = lat;
-      lat = std::atan((z / radius_xy) * 1 / (1 - e2_ * N / (N + alt)));
+      lat = atan((z / radius_xy) * 1 / (1 - e2_ * N / (N + alt)));
 
-      if (std::abs(prev_lat - lat) < kEps && std::abs(prev_alt - alt) < kEps) {
+      if (std::abs(prev_lat - lat) < kEps) {
         break;
       }
     }
@@ -122,10 +121,13 @@ std::vector<Eigen::Vector3d> GPSTransform::XYZToEll(
 }
 
 std::vector<Eigen::Vector3d> GPSTransform::EllToENU(
-    const std::vector<Eigen::Vector3d>& ell, const double lat0,
-    const double lon0) const {
+    const std::vector<Eigen::Vector3d>& ell) const {
   // Convert GPS (lat / lon / alt) to ECEF
   std::vector<Eigen::Vector3d> xyz = EllToXYZ(ell);
+
+  // GPS reference origin
+  const double lat0 = ell[0](0);
+  const double lon0 = ell[0](1);
 
   return XYZToENU(xyz, lat0, lon0);
 }

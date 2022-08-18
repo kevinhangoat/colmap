@@ -1,4 +1,4 @@
-// Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+// Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -281,7 +281,7 @@ void ModelViewerWidget::ReloadReconstruction() {
     images[image_id] = reconstruction->Image(image_id);
   }
 
-  statusbar_status_label->setText(QString().asprintf(
+  statusbar_status_label->setText(QString().sprintf(
       "%d Images - %d Points", static_cast<int>(reg_image_ids.size()),
       static_cast<int>(points3D.size())));
 
@@ -628,16 +628,14 @@ void ModelViewerWidget::mouseMoveEvent(QMouseEvent* event) {
 }
 
 void ModelViewerWidget::wheelEvent(QWheelEvent* event) {
-  // We don't mind whether horizontal or vertical scroll.
-  const float delta = event->angleDelta().x() + event->angleDelta().y();
-  if (event->modifiers().testFlag(Qt::ControlModifier)) {
-    ChangePointSize(delta);
-  } else if (event->modifiers().testFlag(Qt::AltModifier)) {
-    ChangeCameraSize(delta);
-  } else if (event->modifiers().testFlag(Qt::ShiftModifier)) {
-    ChangeNearPlane(delta);
+  if (event->modifiers() & Qt::ControlModifier) {
+    ChangePointSize(event->delta());
+  } else if (event->modifiers() & Qt::AltModifier) {
+    ChangeCameraSize(event->delta());
+  } else if (event->modifiers() & Qt::ShiftModifier) {
+    ChangeNearPlane(event->delta());
   } else {
-    ChangeFocusDistance(delta);
+    ChangeFocusDistance(event->delta());
   }
   event->accept();
 }

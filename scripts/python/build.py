@@ -1,4 +1,4 @@
-# Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+# Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -388,11 +388,11 @@ def build_ceres_solver(args):
     if os.path.exists(path):
         return
 
-    url = "https://github.com/ceres-solver/ceres-solver/archive/2.1.0.zip"
-    archive_path = os.path.join(args.download_path, "ceres-solver-2.1.0.zip")
+    url = "https://github.com/ceres-solver/ceres-solver/archive/1.14.0.zip"
+    archive_path = os.path.join(args.download_path, "ceres-solver-1.14.0.zip")
     download_zipfile(url, archive_path, args.build_path,
-                     "0d4fbfd9d381b85a362365c8d5f468c8")
-    shutil.move(os.path.join(args.build_path, "ceres-solver-2.1.0"), path)
+                     "26b255b7a9f330bbc1def3b839724a2a")
+    shutil.move(os.path.join(args.build_path, "ceres-solver-1.14.0"), path)
 
     extra_config_args = [
         "-DBUILD_TESTING=OFF",
@@ -530,15 +530,15 @@ def main():
     mkdir_if_not_exists(os.path.join(args.install_path, "lib"))
     mkdir_if_not_exists(os.path.join(args.install_path, "share"))
 
-    build_eigen(args)
-    build_freeimage(args)
-    build_glew(args)
-    build_gflags(args)
-    build_glog(args)
-    build_suite_sparse(args)
-    build_ceres_solver(args)
+    # build_eigen(args)
+    # build_freeimage(args)
+    # build_glew(args)
+    # build_gflags(args)
+    # build_glog(args)
+    # build_suite_sparse(args)
+    # build_ceres_solver(args)
     build_colmap(args)
-    build_post_process(args)
+    # build_post_process(args)
 
     print()
     print()

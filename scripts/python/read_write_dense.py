@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+# Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,11 @@ import argparse
 import numpy as np
 import os
 import struct
+import matplotlib.cm as cm
+import matplotlib.colors as colors
+from scipy import ndimage, misc
+
+import pdb
 
 
 def read_array(path):
@@ -91,8 +96,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--depth_map",
                         help="path to depth map", type=str, required=True)
-    parser.add_argument("-n", "--normal_map",
-                        help="path to normal map", type=str, required=True)
+    # parser.add_argument("-n", "--normal_map",
+    #                     help="path to normal map", type=str, required=True)
     parser.add_argument("--min_depth_percentile",
                         help="minimum visualization depth percentile",
                         type=float, default=5)
@@ -108,34 +113,44 @@ def main():
 
     if args.min_depth_percentile > args.max_depth_percentile:
         raise ValueError("min_depth_percentile should be less than or equal "
-                         "to the max_depth_perceintile.")
+                         "to the max_depth_percentile.")
 
     # Read depth and normal maps corresponding to the same image.
     if not os.path.exists(args.depth_map):
         raise FileNotFoundError("File not found: {}".format(args.depth_map))
 
-    if not os.path.exists(args.normal_map):
-        raise FileNotFoundError("File not found: {}".format(args.normal_map))
+    # if not os.path.exists(args.normal_map):
+        # raise FileNotFoundError("File not found: {}".format(args.normal_map))
 
     depth_map = read_array(args.depth_map)
-    normal_map = read_array(args.normal_map)
+    # normal_map = read_array(args.normal_map)
+    pdb.set_trace()
+    # depth_map[depth_map < 3] = 1000
+    # depth_map[depth_map == 0.0] = 1000
+    # depth_map[depth_map > 500] = 1000
 
     min_depth, max_depth = np.percentile(
-        depth_map, [args.min_depth_percentile, args.max_depth_percentile])
+        depth_map[depth_map != 1000], [args.min_depth_percentile, args.max_depth_percentile])
     depth_map[depth_map < min_depth] = min_depth
     depth_map[depth_map > max_depth] = max_depth
 
     import pylab as plt
 
     # Visualize the depth map.
-    plt.figure()
-    plt.imshow(depth_map)
+    plt.figure(figsize=(30, 20))
+    cmap = cm.Blues
+    # depth_map_median = ndimage.median_filter(depth_map, size=10)
+    # plt.imshow(depth_map, cmap=cm.gist_yarg, norm=colors.Normalize(vmin=min_depth+1, vmax=max_depth))
+    plt.imshow(depth_map, cmap = cmap)
+
+    # pdb.set_trace()
+    plt.colorbar()
     plt.title("depth map")
 
     # Visualize the normal map.
-    plt.figure()
-    plt.imshow(normal_map)
-    plt.title("normal map")
+    # plt.figure()
+    # plt.imshow(normal_map)
+    # plt.title("normal map")
 
     plt.show()
 

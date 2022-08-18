@@ -1,4 +1,4 @@
-# Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+# Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -499,4 +499,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    # path = "/scratch_net/zoidberg/yuthan/bdd100k/10023/d389c316-c71f7a5e/sparse/orientation_aligned"
+    path = "/scratch_net/zoidberg_second/yuthan/bdd100k/10023/daytime/overlaps/6/sparse/orientation_aligned"
+    cameras, images, points3D = read_model(path, '.bin')
+    write_model(cameras, images, points3D, path, ".txt")

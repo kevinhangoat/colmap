@@ -1,4 +1,4 @@
-// Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+// Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -80,6 +80,10 @@ class IncrementalMapper {
     // Maximum number of trials to use an image for initialization.
     int init_max_reg_trials = 2;
 
+    // Whether to force the use of a Homography for the computed relative pose
+    // to initialize the SfM reconstruction
+    bool init_with_homography = false;
+
     // Maximum reprojection error in absolute pose estimation.
     double abs_pose_max_error = 12.0;
 
@@ -118,6 +122,9 @@ class IncrementalMapper {
 
     // If reconstruction is provided as input, fix the existing image poses.
     bool fix_existing_images = false;
+
+    // If prior motion use is set
+    bool use_prior_motion = false;
 
     // Number of threads.
     int num_threads = -1;

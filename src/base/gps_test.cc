@@ -1,4 +1,4 @@
-// Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+// Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,9 @@ BOOST_AUTO_TEST_CASE(TestEllToXYZGRS80) {
   const auto xyz = gps_tform.EllToXYZ(ell);
 
   for (size_t i = 0; i < ell.size(); ++i) {
-    BOOST_CHECK(xyz[i].isApprox(ref_xyz[i], 1e-8));
+    BOOST_CHECK(std::abs(xyz[i](0) - ref_xyz[i](0)) < 1e-8);
+    BOOST_CHECK(std::abs(xyz[i](1) - ref_xyz[i](1)) < 1e-8);
+    BOOST_CHECK(std::abs(xyz[i](2) - ref_xyz[i](2)) < 1e-8);
   }
 }
 
@@ -74,7 +76,9 @@ BOOST_AUTO_TEST_CASE(TestEllToXYZWGS84) {
   const auto xyz = gps_tform.EllToXYZ(ell);
 
   for (size_t i = 0; i < ell.size(); ++i) {
-    BOOST_CHECK(xyz[i].isApprox(ref_xyz[i], 1e-8));
+    BOOST_CHECK(std::abs(xyz[i](0) - ref_xyz[i](0)) < 1e-8);
+    BOOST_CHECK(std::abs(xyz[i](1) - ref_xyz[i](1)) < 1e-8);
+    BOOST_CHECK(std::abs(xyz[i](2) - ref_xyz[i](2)) < 1e-8);
   }
 }
 
@@ -95,7 +99,9 @@ BOOST_AUTO_TEST_CASE(TestXYZToEll_GRS80) {
   const auto ell = gps_tform.XYZToEll(xyz);
 
   for (size_t i = 0; i < xyz.size(); ++i) {
-    BOOST_CHECK(ell[i].isApprox(ref_ell[i], 1e-5));
+    BOOST_CHECK(std::abs(ell[i](0) - ref_ell[i](0)) < 1e-5);
+    BOOST_CHECK(std::abs(ell[i](1) - ref_ell[i](1)) < 1e-5);
+    BOOST_CHECK(std::abs(ell[i](2) - ref_ell[i](2)) < 1e-5);
   }
 }
 
@@ -116,7 +122,9 @@ BOOST_AUTO_TEST_CASE(TestXYZToEll_WGS84) {
   const auto ell = gps_tform.XYZToEll(xyz);
 
   for (size_t i = 0; i < xyz.size(); ++i) {
-    BOOST_CHECK(ell[i].isApprox(ref_ell[i], 1e-5));
+    BOOST_CHECK(std::abs(ell[i](0) - ref_ell[i](0)) < 1e-5);
+    BOOST_CHECK(std::abs(ell[i](1) - ref_ell[i](1)) < 1e-5);
+    BOOST_CHECK(std::abs(ell[i](2) - ref_ell[i](2)) < 1e-5);
   }
 }
 
@@ -133,7 +141,9 @@ BOOST_AUTO_TEST_CASE(TestXYZToEllToXYZ_GRS80) {
   const auto xyz2 = gps_tform.EllToXYZ(ell);
 
   for (size_t i = 0; i < xyz.size(); ++i) {
-    BOOST_CHECK(xyz[i].isApprox(xyz2[i], 1e-5));
+    BOOST_CHECK(std::abs(xyz[i](0) - xyz2[i](0)) < 1e-5);
+    BOOST_CHECK(std::abs(xyz[i](1) - xyz2[i](1)) < 1e-5);
+    BOOST_CHECK(std::abs(xyz[i](2) - xyz2[i](2)) < 1e-5);
   }
 }
 
@@ -150,7 +160,9 @@ BOOST_AUTO_TEST_CASE(TestXYZToEllToXYZ_WGS84) {
   const auto xyz2 = gps_tform.EllToXYZ(ell);
 
   for (size_t i = 0; i < xyz.size(); ++i) {
-    BOOST_CHECK(xyz[i].isApprox(xyz2[i], 1e-5));
+    BOOST_CHECK(std::abs(xyz[i](0) - xyz2[i](0)) < 1e-5);
+    BOOST_CHECK(std::abs(xyz[i](1) - xyz2[i](1)) < 1e-5);
+    BOOST_CHECK(std::abs(xyz[i](2) - xyz2[i](2)) < 1e-5);
   }
 }
 
@@ -175,10 +187,12 @@ BOOST_AUTO_TEST_CASE(TestEllToENUWGS84) {
   const auto ref_enu = gps_tform.XYZToENU(ref_xyz, ori_ell(0), ori_ell(1));
 
   // Get ENU from Ell
-  const auto enu = gps_tform.EllToENU(ell, ori_ell(0), ori_ell(1));
+  const auto enu = gps_tform.EllToENU(ell);
 
   for (size_t i = 0; i < ell.size(); ++i) {
-    BOOST_CHECK(enu[i].isApprox(ref_enu[i], 1e-8));
+    BOOST_CHECK(std::abs(enu[i](0) - ref_enu[i](0)) < 1e-8);
+    BOOST_CHECK(std::abs(enu[i](1) - ref_enu[i](1)) < 1e-8);
+    BOOST_CHECK(std::abs(enu[i](2) - ref_enu[i](2)) < 1e-8);
   }
 }
 
@@ -208,7 +222,9 @@ BOOST_AUTO_TEST_CASE(TestXYZToENU) {
   const auto enu = gps_tform.XYZToENU(xyz, ori_ell(0), ori_ell(1));
 
   for (size_t i = 0; i < ell.size(); ++i) {
-    BOOST_CHECK(enu[i].isApprox(ref_enu[i], 1e-8));
+    BOOST_CHECK(std::abs(enu[i](0) - ref_enu[i](0)) < 1e-8);
+    BOOST_CHECK(std::abs(enu[i](1) - ref_enu[i](1)) < 1e-8);
+    BOOST_CHECK(std::abs(enu[i](2) - ref_enu[i](2)) < 1e-8);
   }
 }
 
@@ -242,7 +258,9 @@ BOOST_AUTO_TEST_CASE(TestENUToEllWGS84) {
   const auto ell = gps_tform.ENUToEll(enu, lat0, lon0, alt0);
 
   for (size_t i = 0; i < ell.size(); ++i) {
-    BOOST_CHECK(ell[i].isApprox(ref_ell[i], 1e-5));
+    BOOST_CHECK(std::abs(ell[i](0) - ref_ell[i](0)) < 1e-5);
+    BOOST_CHECK(std::abs(ell[i](1) - ref_ell[i](1)) < 1e-5);
+    BOOST_CHECK(std::abs(ell[i](2) - ref_ell[i](2)) < 1e-5);
   }
 }
 
@@ -266,12 +284,14 @@ BOOST_AUTO_TEST_CASE(TestENUToXYZ) {
   const double alt0 = ell[0](2);
 
   // Get ENU from Ell
-  const auto enu = gps_tform.EllToENU(ell, lat0, lon0);
+  const auto enu = gps_tform.EllToENU(ell);
 
   // Get XYZ from ENU
   const auto xyz = gps_tform.ENUToXYZ(enu, lat0, lon0, alt0);
 
   for (size_t i = 0; i < ell.size(); ++i) {
-    BOOST_CHECK(xyz[i].isApprox(ref_xyz[i], 1e-8));
+    BOOST_CHECK(std::abs(xyz[i](0) - ref_xyz[i](0)) < 1e-8);
+    BOOST_CHECK(std::abs(xyz[i](1) - ref_xyz[i](1)) < 1e-8);
+    BOOST_CHECK(std::abs(xyz[i](2) - ref_xyz[i](2)) < 1e-8);
   }
 }

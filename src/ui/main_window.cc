@@ -1,4 +1,4 @@
-// Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+// Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -701,6 +701,39 @@ void MainWindow::Import() {
           action_project_edit_->trigger();
         }
       });
+
+  // if (options_.database_path != nullptr) {
+  //   std::vector<std::string> ref_image_names;
+  //   std::vector<Eigen::Vector3d> ref_locations;
+
+  //   Database database(*options_.database_path);
+  //   auto images = database.ReadAllImages();
+  //   ref_image_names.reserve(images.size());
+  //   ref_locations.reserve(images.size());
+  //   for (const auto image : images) {
+  //     if (image.HasTvecPrior()) {
+  //       ref_image_names.push_back(image.Name());
+  //       ref_locations.push_back(image.TvecPrior());
+  //     }
+  //   }
+
+  //   if (ref_image_names.empty()) {
+  //     return;
+  //   }
+    
+  //   // PROCESS REF LOCATIONS!
+
+  //   for (const auto rec_idx : reconstruction_manager_.Size()) {
+  //     auto &reconstruction = reconstruction_manager_.Get(rec_idx);
+  //     for (auto &image : reconstruction.Images()) {
+  //       for (size_t i=0 ; i < ref_image_names.size() ; ++i) {
+  //         if (ref_image_names[i] ==  image.second.Name()) {
+  //           image.second.SetTvecPrior(ref_locations[i]);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 }
 
 void MainWindow::ImportFrom() {
@@ -1247,11 +1280,11 @@ void MainWindow::ResetOptions() {
 void MainWindow::About() {
   QMessageBox::about(
       this, tr("About"),
-      QString().asprintf("<span style='font-weight:normal'><b>%s</b><br />"
-                         "<small>(%s)</small><br /><br />"
-                         "<b>Author:</b> Johannes L. Schönberger<br /><br />"
-                         "<b>Email:</b> jsch-at-demuc-dot-de</span>",
-                         GetVersionInfo().c_str(), GetBuildInfo().c_str()));
+      QString().sprintf("<span style='font-weight:normal'><b>%s</b><br />"
+                        "<small>(%s)</small><br /><br />"
+                        "<b>Author:</b> Johannes L. Schönberger<br /><br />"
+                        "<b>Email:</b> jsch-at-demuc-dot-de</span>",
+                        GetVersionInfo().c_str(), GetBuildInfo().c_str()));
 }
 
 void MainWindow::Documentation() {
@@ -1284,7 +1317,7 @@ void MainWindow::UpdateTimer() {
   const int minutes = (elapsed_time / 60) % 60;
   const int hours = (elapsed_time / 3600) % 24;
   const int days = elapsed_time / 86400;
-  statusbar_timer_label_->setText(QString().asprintf(
+  statusbar_timer_label_->setText(QString().sprintf(
       "Time %02d:%02d:%02d:%02d", days, hours, minutes, seconds));
 }
 

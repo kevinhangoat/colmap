@@ -1,4 +1,4 @@
-// Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+// Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -39,9 +39,9 @@
 using namespace colmap;
 
 BOOST_AUTO_TEST_CASE(TestBundleAdjustmentCostFunction) {
-  std::unique_ptr<ceres::CostFunction> cost_function(
+  ceres::CostFunction* cost_function =
       BundleAdjustmentCostFunction<SimplePinholeCameraModel>::Create(
-          Eigen::Vector2d::Zero()));
+          Eigen::Vector2d::Zero());
   double qvec[4] = {1, 0, 0, 0};
   double tvec[3] = {0, 0, 0};
   double point3D[3] = {0, 0, 1};
@@ -69,11 +69,10 @@ BOOST_AUTO_TEST_CASE(TestBundleAdjustmentCostFunction) {
 }
 
 BOOST_AUTO_TEST_CASE(TestBundleAdjustmentConstantPoseCostFunction) {
-  std::unique_ptr<ceres::CostFunction> cost_function(
-      BundleAdjustmentConstantPoseCostFunction<
-          SimplePinholeCameraModel>::Create(ComposeIdentityQuaternion(),
-                                            Eigen::Vector3d::Zero(),
-                                            Eigen::Vector2d::Zero()));
+  ceres::CostFunction* cost_function = BundleAdjustmentConstantPoseCostFunction<
+      SimplePinholeCameraModel>::Create(ComposeIdentityQuaternion(),
+                                        Eigen::Vector3d::Zero(),
+                                        Eigen::Vector2d::Zero());
   double point3D[3] = {0, 0, 1};
   double camera_params[3] = {1, 0, 0};
   double residuals[2];
@@ -99,9 +98,9 @@ BOOST_AUTO_TEST_CASE(TestBundleAdjustmentConstantPoseCostFunction) {
 }
 
 BOOST_AUTO_TEST_CASE(TestRigBundleAdjustmentCostFunction) {
-  std::unique_ptr<ceres::CostFunction> cost_function(
+  ceres::CostFunction* cost_function =
       RigBundleAdjustmentCostFunction<SimplePinholeCameraModel>::Create(
-          Eigen::Vector2d::Zero()));
+          Eigen::Vector2d::Zero());
   double rig_qvec[4] = {1, 0, 0, 0};
   double rig_tvec[3] = {0, 0, -1};
   double rel_qvec[4] = {1, 0, 0, 0};
@@ -132,9 +131,8 @@ BOOST_AUTO_TEST_CASE(TestRigBundleAdjustmentCostFunction) {
 }
 
 BOOST_AUTO_TEST_CASE(TestRelativePoseCostFunction) {
-  std::unique_ptr<ceres::CostFunction> cost_function(
-      RelativePoseCostFunction::Create(Eigen::Vector2d(0, 0),
-                                       Eigen::Vector2d(0, 0)));
+  ceres::CostFunction* cost_function = RelativePoseCostFunction::Create(
+      Eigen::Vector2d(0, 0), Eigen::Vector2d(0, 0));
   double qvec[4] = {1, 0, 0, 0};
   double tvec[3] = {0, 1, 0};
   double residuals[1];
@@ -142,13 +140,13 @@ BOOST_AUTO_TEST_CASE(TestRelativePoseCostFunction) {
   BOOST_CHECK(cost_function->Evaluate(parameters, residuals, nullptr));
   BOOST_CHECK_EQUAL(residuals[0], 0);
 
-  cost_function.reset(RelativePoseCostFunction::Create(Eigen::Vector2d(0, 0),
-                                                       Eigen::Vector2d(1, 0)));
+  cost_function = RelativePoseCostFunction::Create(Eigen::Vector2d(0, 0),
+                                                   Eigen::Vector2d(1, 0));
   BOOST_CHECK(cost_function->Evaluate(parameters, residuals, nullptr));
   BOOST_CHECK_EQUAL(residuals[0], 0.5);
 
-  cost_function.reset(RelativePoseCostFunction::Create(Eigen::Vector2d(0, 0),
-                                                       Eigen::Vector2d(1, 1)));
+  cost_function = RelativePoseCostFunction::Create(Eigen::Vector2d(0, 0),
+                                                   Eigen::Vector2d(1, 1));
   BOOST_CHECK(cost_function->Evaluate(parameters, residuals, nullptr));
   BOOST_CHECK_EQUAL(residuals[0], 0.5);
 }

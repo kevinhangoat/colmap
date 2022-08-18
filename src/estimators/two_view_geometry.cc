@@ -1,4 +1,4 @@
-// Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+// Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -470,6 +470,7 @@ void TwoViewGeometry::EstimateHomography(
 
   inlier_matches = ExtractInlierMatches(matches, H_report.support.num_inliers,
                                         H_report.inlier_mask);
+
   if (options.detect_watermark &&
       DetectWatermark(camera1, matched_points1, camera2, matched_points2,
                       H_report.support.num_inliers, H_report.inlier_mask,

@@ -1,4 +1,4 @@
-// Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+// Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -86,6 +86,10 @@ struct TwoViewGeometry {
     // a planar or panoramic configuration is assumed.
     double max_H_inlier_ratio = 0.8;
 
+    // In case the user asks for it, only going to estimate a Homography
+    // between both cameras.
+    bool force_H_use = false;
+
     // In case of valid two-view geometry, it is checked whether the geometry
     // describes a pure translation in the border region of the image. If more
     // than a certain ratio of inlier points conform with a pure image
@@ -103,10 +107,6 @@ struct TwoViewGeometry {
 
     // Whether to ignore watermark models in multiple model estimation.
     bool multiple_ignore_watermark = true;
-
-    // In case the user asks for it, only going to estimate a Homography
-    // between both cameras.
-    bool force_H_use = false;
 
     // Options used to robustly estimate the geometry.
     RANSACOptions ransac_options;
@@ -228,11 +228,11 @@ struct TwoViewGeometry {
   // @param matches         Feature matches between first and second image.
   // @param options         Two-view geometry estimation options.
   void EstimateHomography(const Camera& camera1,
-                          const std::vector<Eigen::Vector2d>& points1,
-                          const Camera& camera2,
-                          const std::vector<Eigen::Vector2d>& points2,
-                          const FeatureMatches& matches,
-                          const Options& options);
+                            const std::vector<Eigen::Vector2d>& points1,
+                            const Camera& camera2,
+                            const std::vector<Eigen::Vector2d>& points2,
+                            const FeatureMatches& matches,
+                            const Options& options);
 
   // Detect if inlier matches are caused by a watermark.
   // A watermark causes a pure translation in the border are of the image.

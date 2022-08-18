@@ -1,4 +1,4 @@
-// Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+// Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -1487,8 +1487,8 @@ size_t Reconstruction::FilterPoints3DWithLargeReprojectionError(
     class Point3D& point3D = Point3D(point3D_id);
 
     if (point3D.Track().Length() < 2) {
-      num_filtered += point3D.Track().Length();
       DeletePoint3D(point3D_id);
+      num_filtered += point3D.Track().Length();
       continue;
     }
 

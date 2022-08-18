@@ -1,4 +1,4 @@
-// Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+// Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -121,6 +121,7 @@ int main(int argc, char** argv) {
   commands.emplace_back("mapper", &RunMapper);
   commands.emplace_back("matches_importer", &RunMatchesImporter);
   commands.emplace_back("model_aligner", &RunModelAligner);
+  commands.emplace_back("model_sfm_gps_aligner", &RunModelSfmGPSAlign);
   commands.emplace_back("model_analyzer", &RunModelAnalyzer);
   commands.emplace_back("model_comparer", &RunModelComparer);
   commands.emplace_back("model_converter", &RunModelConverter);

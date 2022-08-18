@@ -1,4 +1,4 @@
-// Copyright (c) 2022, ETH Zurich and UNC Chapel Hill.
+// Copyright (c) 2018, ETH Zurich and UNC Chapel Hill.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@
 
 #include "controllers/incremental_mapper.h"
 
+#include "base/gps.h"
 #include "util/misc.h"
 
 namespace colmap {
@@ -47,8 +48,8 @@ size_t TriangulateImage(const IncrementalMapperOptions& options,
 }
 
 void AdjustGlobalBundle(const IncrementalMapperOptions& options,
+                        BundleAdjustmentOptions& custom_ba_options,
                         IncrementalMapper* mapper) {
-  BundleAdjustmentOptions custom_ba_options = options.GlobalBundleAdjustment();
 
   const size_t num_reg_images = mapper->GetReconstruction().NumRegImages();
 
@@ -64,6 +65,7 @@ void AdjustGlobalBundle(const IncrementalMapperOptions& options,
 
   PrintHeading1("Global bundle adjustment");
   if (options.ba_global_use_pba && !options.fix_existing_images &&
+      !options.ba_use_prior_motion &&
       num_reg_images >= kMinNumRegImagesForFastBA &&
       ParallelBundleAdjuster::IsSupported(custom_ba_options,
                                           mapper->GetReconstruction())) {
@@ -89,12 +91,9 @@ void IterativeLocalRefinement(const IncrementalMapperOptions& options,
     std::cout << "  => Filtered observations: "
               << report.num_filtered_observations << std::endl;
     const double changed =
-        report.num_adjusted_observations == 0
-            ? 0
-            : (report.num_merged_observations +
-               report.num_completed_observations +
-               report.num_filtered_observations) /
-                  static_cast<double>(report.num_adjusted_observations);
+        (report.num_merged_observations + report.num_completed_observations +
+         report.num_filtered_observations) /
+        static_cast<double>(report.num_adjusted_observations);
     std::cout << StringPrintf("  => Changed observations: %.6f", changed)
               << std::endl;
     if (changed < options.ba_local_max_refinement_change) {
@@ -114,21 +113,25 @@ void IterativeGlobalRefinement(const IncrementalMapperOptions& options,
   std::cout << "  => Retriangulated observations: "
             << mapper->Retriangulate(options.Triangulation()) << std::endl;
 
+  BundleAdjustmentOptions custom_ba_options = options.GlobalBundleAdjustment();
+
   for (int i = 0; i < options.ba_global_max_refinements; ++i) {
     const size_t num_observations =
         mapper->GetReconstruction().ComputeNumObservations();
     size_t num_changed_observations = 0;
-    AdjustGlobalBundle(options, mapper);
+    AdjustGlobalBundle(options, custom_ba_options, mapper);
     num_changed_observations += CompleteAndMergeTracks(options, mapper);
     num_changed_observations += FilterPoints(options, mapper);
     const double changed =
-        num_observations == 0
-            ? 0
-            : static_cast<double>(num_changed_observations) / num_observations;
+        static_cast<double>(num_changed_observations) / num_observations;
     std::cout << StringPrintf("  => Changed observations: %.6f", changed)
               << std::endl;
     if (changed < options.ba_global_max_refinement_change) {
       break;
+    }
+    if (options.ba_use_prior_motion && i == 0) {
+      // Only use robust cost function on visual meas. for first iteration.
+      custom_ba_options.loss_function_type = BundleAdjustmentOptions::LossFunctionType::TRIVIAL;
     }
   }
 
@@ -202,6 +205,7 @@ IncrementalMapper::Options IncrementalMapperOptions::Mapper() const {
   options.num_threads = num_threads;
   options.local_ba_num_images = ba_local_num_images;
   options.fix_existing_images = fix_existing_images;
+  options.use_prior_motion = ba_use_prior_motion;
   return options;
 }
 
@@ -236,6 +240,9 @@ BundleAdjustmentOptions IncrementalMapperOptions::LocalBundleAdjustment()
   options.loss_function_scale = 1.0;
   options.loss_function_type =
       BundleAdjustmentOptions::LossFunctionType::SOFT_L1;
+  options.use_prior_motion = false;
+  // options.motion_prior_xyz_std =
+  //     Eigen::Vector3d(ba_prior_std_x, ba_prior_std_y, ba_prior_std_z);
   return options;
 }
 
@@ -260,6 +267,20 @@ BundleAdjustmentOptions IncrementalMapperOptions::GlobalBundleAdjustment()
       ba_min_num_residuals_for_multi_threading;
   options.loss_function_type =
       BundleAdjustmentOptions::LossFunctionType::TRIVIAL;
+  if (ba_use_prior_motion) {
+    options.use_prior_motion = ba_use_prior_motion;
+    options.motion_prior_xyz_std =
+        Eigen::Vector3d(ba_prior_std_x, ba_prior_std_y, ba_prior_std_z);
+    if (ba_global_use_robust_loss_on_prior) {
+      options.use_robust_loss_on_prior = true;
+      options.prior_loss_scale = prior_loss_scale;
+    }
+    if (ba_global_use_robust_cost) {
+      options.loss_function_scale = ba_global_loss_scale;
+      options.loss_function_type =
+          BundleAdjustmentOptions::LossFunctionType::SOFT_L1;
+    }
+  }
   return options;
 }
 
@@ -320,6 +341,13 @@ void IncrementalMapperController::Run() {
     return;
   }
 
+  if (options_->ba_use_prior_motion) {
+    std::cout << "\nSETTING UP PRIOR MOTION!";
+    if (!SetUpPriorMotions()) {
+      return;
+    }
+  }
+
   IncrementalMapper::Options init_mapper_options = options_->Mapper();
   Reconstruct(init_mapper_options);
 
@@ -376,6 +404,71 @@ bool IncrementalMapperController::LoadDatabase() {
               << std::endl
               << std::endl;
     return false;
+  }
+
+  return true;
+}
+
+bool IncrementalMapperController::SetUpPriorMotions() {
+  GPSTransform gps_transform(GPSTransform::WGS84);
+  size_t nb_motion_prior = 0;
+
+  std::cout << "\nSetting Up Prior Motions!\n";
+
+  // GPS to ENU conversion
+  if (options_->ba_prior_is_gps && options_->ba_use_enu_coords) {
+    // Get image ids to get ordered GPS prior coords.
+    std::set<image_t> image_prior_ids;
+
+    for (const auto& image : database_cache_.Images()) {
+      if (image.second.HasTvecPrior()) {
+        image_prior_ids.insert(image.first);
+        ++nb_motion_prior;
+      }
+    }
+
+    // Get ordered GPS prior coords.
+    std::vector<Eigen::Vector3d> vgps_priors;
+    vgps_priors.reserve(database_cache_.NumImages());
+
+    for (const auto image_id : image_prior_ids) {
+      vgps_priors.push_back(database_cache_.Image(image_id).TvecPrior());
+    }
+
+    // Convert to GPS to ENU coords.
+    std::vector<Eigen::Vector3d> vtvec_priors =
+        gps_transform.EllToENU(vgps_priors);
+
+    // Set back the prior coords.
+    size_t k = 0;
+    for (const auto image_id : image_prior_ids) {
+      database_cache_.Image(image_id).SetTvecPrior(vtvec_priors[k]);
+      k++;
+    }
+  } else {
+    for (auto& image : database_cache_.Images()) {
+      if (image.second.HasTvecPrior()) {
+        if (options_->ba_prior_is_gps) {
+          // GPS to ECEF conversion
+          database_cache_.Image(image.first)
+              .SetTvecPrior(
+                  gps_transform.EllToXYZ({image.second.TvecPrior()})[0]);
+        }
+        ++nb_motion_prior;
+      }
+    }
+  }
+
+  if (nb_motion_prior < database_cache_.NumImages()) {
+    std::cout << "WARNING! Not all images have a motion prior!\n";
+
+    if (nb_motion_prior < 3) {
+      std::cout << StringPrintf(
+          "Only %d motion priors! Cannot optimize with use_motion_prior "
+          "checked...",
+          nb_motion_prior);
+      return false;
+    }
   }
 
   return true;
@@ -465,7 +558,9 @@ void IncrementalMapperController::Reconstruct(
         break;
       }
 
-      AdjustGlobalBundle(*options_, &mapper);
+      BundleAdjustmentOptions custom_ba_options = options_->GlobalBundleAdjustment();
+      
+      AdjustGlobalBundle(*options_, custom_ba_options, &mapper);
       FilterPoints(*options_, &mapper);
       FilterImages(*options_, &mapper);
 
